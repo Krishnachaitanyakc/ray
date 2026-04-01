@@ -94,7 +94,7 @@ steps:
       - raycpubaseextra-testdeps
 
   - name: ray-anyscale-cuda-build
-    label: "wanda: ray-anyscale py{{matrix.python}} cu{{matrix.cuda}}"
+    label: "wanda: ray-anyscale py{{matrix.python}} {{matrix.platform}}"
     wanda: ci/docker/ray-anyscale-cuda.wanda.yaml
     env_file: rayci.env
     matrix:
@@ -106,15 +106,15 @@ steps:
           - "3.11"
           - "3.12"
           - "3.13"
-        cuda:
-          - "12.3.2-cudnn9"
+        platform:
+          - "cu12.3.2-cudnn9"
       adjustments:
         - with:
             python: "3.12"
-            cuda: "13.0.0-cudnn"
+            platform: "cu13.0.0-cudnn"
     env:
       PYTHON_VERSION: "{{matrix.python}}"
-      CUDA_VERSION: "{{matrix.cuda}}"
+      PLATFORM: "{{matrix.platform}}"
       ARCH_SUFFIX: ""
     tags:
       - oss
@@ -153,22 +153,22 @@ steps:
             platform: cu13.0.0-cudnn
 
   - name: ray-llm-anyscale-cuda-build
-    label: "wanda: ray-llm-anyscale py{{matrix.python}} cu{{matrix.cuda}}"
+    label: "wanda: ray-llm-anyscale py{{matrix.python}} {{matrix.platform}}"
     wanda: ci/docker/ray-llm-anyscale-cuda.wanda.yaml
     env_file: rayci.env
     matrix:
       setup:
         python:
           - "3.12"
-        cuda:
-          - "13.0.0-cudnn"
+        platform:
+          - "cu13.0.0-cudnn"
       adjustments:
         - with:
             python: "3.11"
-            cuda: "12.8.1-cudnn"
+            platform: "cu12.8.1-cudnn"
     env:
       PYTHON_VERSION: "{{matrix.python}}"
-      CUDA_VERSION: "{{matrix.cuda}}"
+      PLATFORM: "{{matrix.platform}}"
       ARCH_SUFFIX: ""
     tags:
       - oss
@@ -202,7 +202,7 @@ steps:
             platform: "cu12.8.1-cudnn"
 
   - name: ray-ml-anyscale-cuda-build
-    label: "wanda: ray-ml-anyscale py{{matrix.python}} cu{{matrix.cuda}}"
+    label: "wanda: ray-ml-anyscale py{{matrix.python}} {{matrix.platform}}"
     wanda: ci/docker/ray-ml-anyscale-cuda.wanda.yaml
     env_file: rayci.env
     matrix:
@@ -211,11 +211,11 @@ steps:
           # This list should be kept in sync with the list of supported Python in
           # release test suite
           - "3.10"
-        cuda:
-          - "12.1.1-cudnn8"
+        platform:
+          - "cu12.1.1-cudnn8"
     env:
       PYTHON_VERSION: "{{matrix.python}}"
-      CUDA_VERSION: "{{matrix.cuda}}"
+      PLATFORM: "{{matrix.platform}}"
       ARCH_SUFFIX: ""
     tags:
       - oss
