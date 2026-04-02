@@ -1,6 +1,8 @@
 import hashlib
+import json
 import os
-from typing import Dict, List, Optional, Tuple
+import re
+from typing import Dict, List, Optional, Set, Tuple
 
 import yaml
 
@@ -124,6 +126,46 @@ def create_custom_build_yaml(destination_file: str, tests: List[Test]) -> None:
 
     with open(destination_file, "w") as f:
         yaml.dump(build_config, f, default_flow_style=False, sort_keys=False)
+
+
+def _short_tag(platform: str) -> str:
+    """Derive the short platform tag from a full platform string.
+
+    Examples: "cu12.3.2-cudnn9" → "cu123", "cpu" → "cpu".
+    """
+    if platform in ("cpu", "tpu"):
+        return platform
+    base = platform.split("-", 1)[0]  # "cu12.3.2"
+    parts = base.split(".")  # ["cu12", "3", "2"]
+    return f"{parts[0]}{parts[1]}" if len(parts) >= 2 else base
+
+
+def build_short_platform_map(ray_images_path: str) -> Dict[str, str]:
+    """Build short-tag → full-platform map from ray-images.json."""
+    if not os.path.exists(ray_images_path):
+        raise FileNotFoundError(f"ray-images.json not found at {ray_images_path}")
+    with open(ray_images_path) as f:
+        images = json.load(f)
+    platforms: Set[str] = set()
+    for cfg in images.values():
+        platforms.update(cfg.get("platforms", []))
+    result: Dict[str, str] = {}
+    for p in platforms:
+        short = _short_tag(p)
+        if short == "tpu":
+            continue  # tpu is not used in release build steps
+        if short in result:
+            raise ValueError(
+                f"Collision detected for short tag '{short}': "
+                f"'{result[short]}' and '{p}' both map to the same tag."
+            )
+        result[short] = p
+    return result
+
+
+def _sanitize_array_value(value: str) -> str:
+    """Strip non-alphanumeric characters, matching rayci's array key logic."""
+    return re.sub(r"[^a-zA-Z0-9]", "", value)
 
 
 def get_prerequisite_step(image: str, base_image: str) -> Optional[str]:
