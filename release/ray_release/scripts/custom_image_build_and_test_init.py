@@ -194,6 +194,7 @@ def main(
         global_config=global_config,
         is_concurrency_limit=not no_concurrency_limit,
         block_step_key=block_step["key"] if block_step else None,
+        platform_map=platform_map,
     )
     steps = [{"group": "block", "steps": [block_step]}] + steps if block_step else steps
 
