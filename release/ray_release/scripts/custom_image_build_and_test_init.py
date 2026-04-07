@@ -19,7 +19,10 @@ from ray_release.config import (
     read_and_validate_release_test_collection,
 )
 from ray_release.configs.global_config import init_global_config
-from ray_release.custom_byod_build_init_helper import create_custom_build_yaml
+from ray_release.custom_byod_build_init_helper import (
+    build_short_platform_map,
+    create_custom_build_yaml,
+)
 from ray_release.exception import ReleaseTestCLIError, ReleaseTestConfigError
 from ray_release.logger import logger
 
@@ -137,10 +140,16 @@ def main(
             "not return any tests to run. Adjust your filters."
         )
     tests = [test for test, _ in filtered_tests]
+
+    platform_map = build_short_platform_map(
+        os.path.join(_bazel_workspace_dir, "ray-images.json")
+    )
+
     # Generate custom image build steps
     create_custom_build_yaml(
         os.path.join(_bazel_workspace_dir, custom_build_jobs_output_file),
         tests,
+        platform_map,
     )
 
     # Generate test job steps
